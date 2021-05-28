@@ -1,0 +1,56 @@
+{
+  "name": "short-crypt",
+  "version": "1.0.9",
+  "description": "ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance.",
+  "main": "lib/short_crypt.js",
+  "types": "lib/short_crypt.d.ts",
+  "scripts": {
+    "test": "mocha -r ts-node/register tests/**/*.test.ts",
+    "ts-dev": "tsc -w",
+    "ts-build": "tsc",
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --mode production"
+  },
+  "prepublishOnly": "npm run build",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/magiclen/ts-short-crypt.git"
+  },
+  "keywords": [
+    "short-crypt"
+  ],
+  "author": "Magic Len",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/magiclen/ts-short-crypt/issues"
+  },
+  "homepage": "https://magiclen.org/short-crypt/",
+  "dependencies": {
+    "hi-base32": "^0.5.0",
+    "hi-base64": "^0.2.1",
+    "long": "^4.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.2",
+    "@babel/register": "^7.13.16",
+    "@types/chai": "^4.2.18",
+    "@types/long": "^4.0.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.6.1",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "babel-loader": "^8.2.2",
+    "buffer": "^6.0.3",
+    "chai": "^4.2.0",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "eslint": "^7.27.0",
+    "mocha": "^8.4.0",
+    "terser-webpack-plugin": "^5.1.2",
+    "ts-loader": "^9.2.2",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.0"
+  }
+}
