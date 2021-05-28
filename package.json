@@ -12,6 +12,9 @@
     "build": "webpack --mode production"
   },
   "prepublishOnly": "npm run build",
+  "engines": {
+    "node": ">=12"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/magiclen/ts-short-crypt.git"
