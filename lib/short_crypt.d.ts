@@ -4,10 +4,10 @@ export default class ShortCrypt {
     private keySumRev;
     constructor(key: string);
     encrypt(data: number[] | string): Cipher;
-    decrypt(base: number, body: number[]): number[] | boolean;
-    decrypt(cipher: Cipher): number[] | boolean;
+    decrypt(base: number, body: number[]): number[] | false;
+    decrypt(cipher: Cipher): number[] | false;
     encryptToURLComponent(data: number[] | string): string;
-    descryptURLComponent(urlComponent: string): boolean | number[];
+    descryptURLComponent(urlComponent: string): false | number[];
     encryptToQRCodeAlphanumeric(data: number[] | string): string;
-    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): boolean | number[];
+    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): false | number[];
 }

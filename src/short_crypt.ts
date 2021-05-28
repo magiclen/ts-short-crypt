@@ -101,9 +101,9 @@ export default class ShortCrypt {
         };
     }
 
-    decrypt(base: number, body: number[]): number[] | boolean;
+    decrypt(base: number, body: number[]): number[] | false;
 
-    decrypt(cipher: Cipher): number[] | boolean;
+    decrypt(cipher: Cipher): number[] | false;
 
     decrypt(baseOrCipher: number | Cipher, body?: number[]) {
         let base: number;
