@@ -1,6 +1,6 @@
 {
   "name": "short-crypt",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance.",
   "main": "lib/short_crypt.js",
   "types": "lib/short_crypt.d.ts",
@@ -9,9 +9,10 @@
     "ts-dev": "tsc -w",
     "ts-build": "tsc",
     "dev": "webpack --mode development --watch",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "prepare": "npm run ts-build && npm run build",
+    "prepublishOnly": "npm run test"
   },
-  "prepare": "npm run ts-build && npm run build",
   "engines": {
     "node": ">=12"
   },
