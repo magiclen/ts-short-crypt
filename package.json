@@ -1,6 +1,6 @@
 {
   "name": "short-crypt",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance.",
   "main": "lib/short_crypt.js",
   "types": "lib/short_crypt.d.ts",
@@ -30,6 +30,9 @@
   },
   "homepage": "https://magiclen.org/short-crypt/",
   "dependencies": {
+    "@types/chai": "^4.2.18",
+    "@types/long": "^4.0.1",
+    "@types/node": "^15.6.1",
     "hi-base32": "^0.5.0",
     "hi-base64": "^0.2.1",
     "long": "^4.0.0"
@@ -38,10 +41,7 @@
     "@babel/core": "^7.14.3",
     "@babel/preset-env": "^7.14.2",
     "@babel/register": "^7.13.16",
-    "@types/chai": "^4.2.18",
-    "@types/long": "^4.0.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^15.6.1",
     "@typescript-eslint/eslint-plugin": "^4.25.0",
     "@typescript-eslint/parser": "^4.25.0",
     "babel-loader": "^8.2.2",
