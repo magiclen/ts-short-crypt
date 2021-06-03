@@ -1,6 +1,6 @@
 import Long from "long";
 
-export const stringToUtf8ByteArray = (str: string) => {
+export const stringToUtf8ByteArray = (str: string): number[] => {
     const out = [];
     
     let p = 0;
@@ -37,7 +37,7 @@ export const stringToUtf8ByteArray = (str: string) => {
     return out;
 };
 
-export const u8toString64 = (i: number) => {
+export const u8toString64 = (i: number): number => {
     if (i < 10) {
         return i + "0".charCodeAt(0);
     } else if (i >= 10 && i < 36) {
@@ -51,7 +51,7 @@ export const u8toString64 = (i: number) => {
     }
 };
 
-export const string64toU8 = (c: number) => {
+export const string64toU8 = (c: number): number => {
     if (c >= "0".charCodeAt(0) && c <= "9".charCodeAt(0)) {
         return c - "0".charCodeAt(0);
     } else if (c >= "A".charCodeAt(0) && c <= "Z".charCodeAt(0)) {
@@ -65,7 +65,7 @@ export const string64toU8 = (c: number) => {
     }
 };
 
-export const u8toString32 = (i: number) => {
+export const u8toString32 = (i: number): number => {
     if (i < 10) {
         return i + "0".charCodeAt(0);
     } else {
@@ -73,7 +73,7 @@ export const u8toString32 = (i: number) => {
     }
 };
 
-export const string32toU8 = (c: number) => {
+export const string32toU8 = (c: number): number => {
     if (c >= "0".charCodeAt(0) && c <= "9".charCodeAt(0)) {
         return c - "0".charCodeAt(0);
     } else {
@@ -81,7 +81,7 @@ export const string32toU8 = (c: number) => {
     }
 };
 
-export const reverseU64 = (v: Long) => {
+export const reverseU64 = (v: Long): Long => {
     v = v.shiftRight(1).and(new Long(0x55555555, 0x55555555)).or(v.and(new Long(0x55555555, 0x55555555)).shiftLeft(1));
     v = v.shiftRight(2).and(new Long(0x33333333, 0x33333333)).or(v.and(new Long(0x33333333, 0x33333333)).shiftLeft(2));
     v = v.shiftRight(4).and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).or(v.and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).shiftLeft(4));

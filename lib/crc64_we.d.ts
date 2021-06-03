@@ -4,7 +4,7 @@ export default class Crc64We {
     private sum;
     private finalXOR;
     digest(data: number[] | string): void;
-    getNumber(): Long.Long;
-    getLong(): Long.Long;
+    getNumber(): Long;
+    getLong(): Long;
     getByteArray(): number[];
 }

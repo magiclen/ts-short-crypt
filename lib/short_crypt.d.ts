@@ -7,7 +7,7 @@ export default class ShortCrypt {
     decrypt(base: number, body: number[]): number[] | false;
     decrypt(cipher: Cipher): number[] | false;
     encryptToURLComponent(data: number[] | string): string;
-    descryptURLComponent(urlComponent: string): false | number[];
+    descryptURLComponent(urlComponent: string): number[] | false;
     encryptToQRCodeAlphanumeric(data: number[] | string): string;
-    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): false | number[];
+    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): number[] | false;
 }

@@ -7,18 +7,18 @@ export default class Crc8Cdma {
 
     private sum = 0xFF;
 
-    digest(data: number[] | string) {
+    digest(data: number[] | string): void {
         if (typeof data === "string") {
             data = stringToUtf8ByteArray(data);
         }
 
         data.forEach((n) => {
-            let index = this.sum ^ n;
+            const index = this.sum ^ n;
             this.sum = ((this.sum << 8) & 0xFF) ^ this.lookupTable[index];
         });
     }
 
-    getNumber() {
+    getNumber(): number {
         return this.sum;
     }
 }

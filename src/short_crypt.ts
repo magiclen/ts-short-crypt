@@ -59,12 +59,10 @@ export default class ShortCrypt {
         let m = base;
         let sum = Long.fromNumber(base, true);
 
-        const self = this;
-
         data.forEach((d, i) => {
-            let offset = self.hashedKey[i % 8] ^ base;
+            const offset = this.hashedKey[i % 8] ^ base;
 
-            let v = d ^ offset;
+            const v = d ^ offset;
 
             encrypted.push(v);
 
@@ -82,7 +80,7 @@ export default class ShortCrypt {
         const path = [];
 
         for (let i = 0;i < len;++i) {
-            let index = i % 8;
+            const index = i % 8;
             path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
         }
 
@@ -90,7 +88,7 @@ export default class ShortCrypt {
             if (p === i) {
                 return;
             }
-            let t = encrypted[i];
+            const t = encrypted[i];
             encrypted[i] = encrypted[p];
             encrypted[p] = t;
         });
@@ -105,7 +103,7 @@ export default class ShortCrypt {
 
     decrypt(cipher: Cipher): number[] | false;
 
-    decrypt(baseOrCipher: number | Cipher, body?: number[]) {
+    decrypt(baseOrCipher: number | Cipher, body?: number[]): number[] | false {
         let base: number;
         
         if (typeof baseOrCipher === "object") {
@@ -142,7 +140,7 @@ export default class ShortCrypt {
         const path = [];
 
         for (let i = 0;i < len;++i) {
-            let index = i % 8;
+            const index = i % 8;
             path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
         }
 
@@ -153,15 +151,13 @@ export default class ShortCrypt {
             if (p === i) {
                 return;
             }
-            let t = data[i];
+            const t = data[i];
             data[i] = data[p];
             data[p] = t;
         });
 
-        const self = this;
-
         data.forEach((d, i) => {
-            let offset = self.hashedKey[i % 8] ^ base;
+            const offset = this.hashedKey[i % 8] ^ base;
 
             decrypted.push(d ^ offset);
         });
@@ -169,7 +165,7 @@ export default class ShortCrypt {
         return decrypted;
     }
 
-    encryptToURLComponent(data: number[] | string) {
+    encryptToURLComponent(data: number[] | string): string {
         if (typeof data === "string") {
             data = stringToUtf8ByteArray(data);
         }
@@ -180,7 +176,7 @@ export default class ShortCrypt {
 
         const encrypted = cipher.body;
 
-        let baseChar = String.fromCharCode(base);
+        const baseChar = String.fromCharCode(base);
 
         const result = base64.encode(encrypted).replace(/[+/]/g, (m0: string) => {
             return m0 === "+" ? "-" : "_";
@@ -201,7 +197,7 @@ export default class ShortCrypt {
         return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
-    descryptURLComponent(urlComponent: string) {
+    descryptURLComponent(urlComponent: string): number[] | false {
         const bytes = stringToUtf8ByteArray(urlComponent);
     
         const len = bytes.length;
@@ -216,22 +212,22 @@ export default class ShortCrypt {
             sum = sum.add(Long.fromNumber(n, true));
         });
 
-        let baseIndex = this.keySumRev.xor(sum).mod(len).toNumber();
+        const baseIndex = this.keySumRev.xor(sum).mod(len).toNumber();
 
-        let base = string64toU8(bytes[baseIndex]);
+        const base = string64toU8(bytes[baseIndex]);
 
         if (base < 0 || base > 31) {
             return false;
         }
 
-        let encryptedBase64Url = urlComponent.slice(0, base) + urlComponent.slice(baseIndex + 1, len);
+        const encryptedBase64Url = urlComponent.slice(0, base) + urlComponent.slice(baseIndex + 1, len);
 
-        let encrypted = base64.decode.bytes(encryptedBase64Url);
+        const encrypted = base64.decode.bytes(encryptedBase64Url);
 
         return this.decrypt(base, encrypted);
     }
 
-    encryptToQRCodeAlphanumeric(data: number[] | string) {
+    encryptToQRCodeAlphanumeric(data: number[] | string): string {
         if (typeof data === "string") {
             data = stringToUtf8ByteArray(data);
         }
@@ -256,12 +252,12 @@ export default class ShortCrypt {
             sum = sum.add(Long.fromNumber(n, true));
         });
 
-        let baseIndex = this.keySumRev.xor(sum).mod(len + 1).toNumber();
+        const baseIndex = this.keySumRev.xor(sum).mod(len + 1).toNumber();
 
         return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
-    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string) {
+    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): number[] | false {
         const bytes = stringToUtf8ByteArray(qrCodeAlphanumeric);
 
         const len = bytes.length;
@@ -286,7 +282,7 @@ export default class ShortCrypt {
 
         const encryptedBase32 = qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
 
-        let encrypted = base32.decode.asBytes(encryptedBase32);
+        const encrypted = base32.decode.asBytes(encryptedBase32);
 
         return this.decrypt(base, encrypted);
     }

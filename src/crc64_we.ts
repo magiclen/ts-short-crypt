@@ -11,26 +11,26 @@ export default class Crc64We  {
 
     private finalXOR = new Long(0xFFFFFFFF, 0xFFFFFFFF);
 
-    digest(data: number[] | string) {
+    digest(data: number[] | string): void {
         if (typeof data === "string") {
             data = stringToUtf8ByteArray(data);
         }
 
         data.forEach((n) => {
-            let index = this.sum.shiftRightUnsigned(56).xor(n).toNumber();
+            const index = this.sum.shiftRightUnsigned(56).xor(n).toNumber();
             this.sum = this.sum.shiftLeft(8).xor(this.lookupTable[index]);
         });
     }
 
-    getNumber() {
+    getNumber(): Long {
         return this.sum;
     }
 
-    getLong() {
+    getLong(): Long {
         return this.sum.xor(this.finalXOR);
     }
 
-    getByteArray() {
+    getByteArray(): number[] {
         return this.getLong().toBytesBE();
     }
 }

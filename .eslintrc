@@ -7,8 +7,13 @@
     "browser": true,
     "node": true
   },
-  "extends": "eslint:recommended",
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "rules": {
+    "@typescript-eslint/no-var-requires": "warn",
     "array-bracket-newline": [
       "error",
       {
@@ -300,17 +305,5 @@
     "wrap-regex": [
       "error"
     ]
-  },
-  "overrides": [
-    {
-      /* for typescript class method overload */
-      "files": [
-        "*.ts",
-        "*.tsx"
-      ],
-      "rules": {
-        "no-dupe-class-members": "off"
-      }
-    }
-  ]
+  }
 }
