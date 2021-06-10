@@ -22,7 +22,7 @@ module.exports = {
                 ],
             },
             {
-                test: /\.(js)$/i,
+                test: /\.js$/i,
                 use: {
                     loader: "babel-loader",
                     options: { presets: ["@babel/preset-env"] },
