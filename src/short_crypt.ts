@@ -105,7 +105,7 @@ export default class ShortCrypt {
 
     decrypt(baseOrCipher: number | Cipher, body?: number[]): number[] | false {
         let base: number;
-        
+
         if (typeof baseOrCipher === "object") {
             body = baseOrCipher.body;
             base = baseOrCipher.base;
@@ -121,7 +121,7 @@ export default class ShortCrypt {
 
         const data = body!;
         const len = data.length;
-        
+
         let m = base;
         let sum = Long.fromNumber(base, true);
 
@@ -197,9 +197,9 @@ export default class ShortCrypt {
         return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
-    descryptURLComponent(urlComponent: string): number[] | false {
+    decryptURLComponent(urlComponent: string): number[] | false {
         const bytes = stringToUtf8ByteArray(urlComponent);
-    
+
         const len = bytes.length;
 
         if (len < 1) {
@@ -220,11 +220,18 @@ export default class ShortCrypt {
             return false;
         }
 
-        const encryptedBase64Url = urlComponent.slice(0, base) + urlComponent.slice(baseIndex + 1, len);
+        const encryptedBase64Url = urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
 
         const encrypted = base64.decode.bytes(encryptedBase64Url);
 
         return this.decrypt(base, encrypted);
+    }
+
+    /**
+     * @deprecated Should use `decryptURLComponent`.
+     */
+    descryptURLComponent(urlComponent: string): number[] | false {
+        return this.decryptURLComponent(urlComponent);
     }
 
     encryptToQRCodeAlphanumeric(data: number[] | string): string {
@@ -243,7 +250,7 @@ export default class ShortCrypt {
         const result = base32.encode(encrypted).replace(/=/g, "");
 
         const resultArray = stringToUtf8ByteArray(result);
-        
+
         const len = resultArray.length;
 
         let sum = Long.fromNumber(base, true);
