@@ -14,6 +14,7 @@ import {
     string32toU8,
 } from "./functions";
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const base64 = require("hi-base64");
 
 export default class ShortCrypt {
@@ -119,6 +120,7 @@ export default class ShortCrypt {
 
         const decrypted: number[] = [];
 
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const data = body!;
         const len = data.length;
 
@@ -222,9 +224,13 @@ export default class ShortCrypt {
 
         const encryptedBase64Url = urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
 
-        const encrypted = base64.decode.bytes(encryptedBase64Url);
+        try {
+            const encrypted = base64.decode.bytes(encryptedBase64Url);
 
-        return this.decrypt(base, encrypted);
+            return this.decrypt(base, encrypted);
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -289,9 +295,13 @@ export default class ShortCrypt {
 
         const encryptedBase32 = qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
 
-        const encrypted = base32.decode.asBytes(encryptedBase32);
+        try {
+            const encrypted = base32.decode.asBytes(encryptedBase32);
 
-        return this.decrypt(base, encrypted);
+            return this.decrypt(base, encrypted);
+        } catch {
+            return false;
+        }
     }
 }
 
