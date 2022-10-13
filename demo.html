@@ -1,27 +1,30 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset=UTF-8>
     <!-- <script src="https://cdn.jsdelivr.net/npm/short-crypt/dist/short-crypt.min.js"></script> -->
     <script src="./dist/short-crypt.min.js"></script>
     <title>ShortCrypt</title>
 </head>
+
 <body>
-<p>Plain Text: hello</p>
-<p>Key: magickey</p>
-<p>Cipher(URL): <span id="url-component"></span></p>
-<p>Cipher(QR Code): <span id="qr-code-alphanumeric"></span></p>
-<script>
-    var plainText = 'hello';
-    var key = 'magickey';
+    <p>Plain Text: hello</p>
+    <p>Key: magickey</p>
+    <p>Cipher(URL): <span id="url-component"></span></p>
+    <p>Cipher(QR Code): <span id="qr-code-alphanumeric"></span></p>
+    <script>
+        var plainText = 'hello';
+        var key = 'magickey';
 
-    var sc = new ShortCrypt(key);
+        var sc = new ShortCrypt(key);
 
-    var cipher1 = sc.encryptToURLComponent(plainText);
-    var cipher2 = sc.encryptToQRCodeAlphanumeric(plainText);
+        var cipher1 = sc.encryptToURLComponent(plainText);
+        var cipher2 = sc.encryptToQRCodeAlphanumeric(plainText);
 
-    document.getElementById('url-component').innerHTML = cipher1;
-    document.getElementById('qr-code-alphanumeric').innerHTML = cipher2;
-</script>
+        document.getElementById('url-component').innerHTML = cipher1;
+        document.getElementById('qr-code-alphanumeric').innerHTML = cipher2;
+    </script>
 </body>
+
 </html>
