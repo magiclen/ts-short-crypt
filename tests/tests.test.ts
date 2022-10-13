@@ -15,7 +15,7 @@ describe("Encryption", function () {
 describe("Decryption", function () {
     it("should use `magickey` to decrypt ciphers to `articles`", () => {
         const sc = new ShortCrypt("magickey");
-
+        
         expect(Buffer.from(sc.decryptURLComponent("2E87Wx52-Tvo") || []).toString("utf8")).to.equal("articles");
         expect(Buffer.from(sc.decryptQRCodeAlphanumeric("3BHNNR45XZH8PU") || []).toString("utf8")).to.equal("articles");
     });

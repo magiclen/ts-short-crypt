@@ -33,9 +33,8 @@
   "homepage": "https://magiclen.org/short-crypt/",
   "dependencies": {
     "@types/long": "^5.0.0",
-    "hi-base32": "^0.5.0",
-    "hi-base64": "^0.2.1",
-    "long": "^5.2.0"
+    "long": "^5.2.0",
+    "rfc4648": "^1.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

@@ -1,5 +1,5 @@
 import Long from "long";
-import base32 from "hi-base32";
+import { base32, base64url } from "rfc4648";
 
 import Crc64We from "./crc64_we";
 import Crc8Cdma from "./crc8_cdma";
@@ -13,9 +13,6 @@ import {
     u8toString32,
     string32toU8,
 } from "./functions";
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const base64 = require("hi-base64");
 
 export default class ShortCrypt {
     private hashedKey: number[];
@@ -180,9 +177,7 @@ export default class ShortCrypt {
 
         const baseChar = String.fromCharCode(base);
 
-        const result = base64.encode(encrypted).replace(/[+/]/g, (m0: string) => {
-            return m0 === "+" ? "-" : "_";
-        }).replace(/=/g, "");
+        const result = base64url.stringify(encrypted, { pad: false });
 
         const resultArray = stringToUtf8ByteArray(result);
 
@@ -225,7 +220,7 @@ export default class ShortCrypt {
         const encryptedBase64Url = urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
 
         try {
-            const encrypted = base64.decode.bytes(encryptedBase64Url);
+            const encrypted = base64url.parse(encryptedBase64Url, { out: Array, loose: true }) as unknown as number[];
 
             return this.decrypt(base, encrypted);
         } catch {
@@ -253,7 +248,7 @@ export default class ShortCrypt {
 
         const baseChar = String.fromCharCode(base);
 
-        const result = base32.encode(encrypted).replace(/=/g, "");
+        const result = base32.stringify(encrypted, { pad: false });
 
         const resultArray = stringToUtf8ByteArray(result);
 
@@ -296,7 +291,7 @@ export default class ShortCrypt {
         const encryptedBase32 = qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
 
         try {
-            const encrypted = base32.decode.asBytes(encryptedBase32);
+            const encrypted = base32.parse(encryptedBase32, { out: Array, loose: true }) as unknown as number[];
 
             return this.decrypt(base, encrypted);
         } catch {
