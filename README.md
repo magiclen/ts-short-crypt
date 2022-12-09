@@ -5,12 +5,10 @@ ShortCrypt
 
 ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance. Even if these data are similar, the ciphers are still pretty different. The most important thing is that a cipher is only **4 bits** larger than its plaintext so that it is suitable for data used in an URL or a QR Code. Besides these, it is also an ideal candidate for serial number generation.
 
-## Usage for Browsers
+## Usage
 
-First of all, import `short-crypt.min.js` into your HTML `head`.
-
-```html
-<script src="https://cdn.jsdelivr.net/npm/short-crypt/dist/short-crypt.min.js"></script>
+```typescript
+import ShortCrypt from "short-crypt";
 ```
 
 Then, create a `ShortCrypt` instance with a key (string).
@@ -37,6 +35,16 @@ For decryption, you can use `decrypt`, `decryptURLComponent`, or `decryptQRCodeA
 ```javascript
 const result1 = sc.decryptURLComponent(cipher1);
 const result2 = sc.decryptQRCodeAlphanumeric(cipher2);
+```
+
+## Usage for Browsers
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/short-crypt/dist/short-crypt.min.js"></script>
+<script>
+    const sc = new ShortCrypt(key);
+    // ...
+</script>
 ```
 
 ## License
