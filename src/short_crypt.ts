@@ -8,7 +8,6 @@ import Cipher from "./cipher";
 import {
     reverseU64,
     string64toU8,
-    stringToUtf8ByteArray,
     u8toString64,
     u8toString32,
     string32toU8,
@@ -20,7 +19,7 @@ export default class ShortCrypt {
     private keySumRev: Long;
 
     constructor(key: string) {
-        const data = stringToUtf8ByteArray(key);
+        const data = new TextEncoder().encode(key);
 
         const crc = new Crc64We();
 
@@ -37,9 +36,9 @@ export default class ShortCrypt {
         this.keySumRev = reverseU64(keySum);
     }
 
-    encrypt(data: number[] | string): Cipher {
+    encrypt(data: Uint8Array | string): Cipher {
         if (typeof data === "string") {
-            data = stringToUtf8ByteArray(data);
+            data = new TextEncoder().encode(data);
         }
 
         const len = data.length;
@@ -52,7 +51,7 @@ export default class ShortCrypt {
 
         const base = hashedValue % 32;
 
-        const encrypted: number[] = [];
+        const encrypted = new Uint8Array(len);
 
         let m = base;
         let sum = Long.fromNumber(base, true);
@@ -62,7 +61,7 @@ export default class ShortCrypt {
 
             const v = d ^ offset;
 
-            encrypted.push(v);
+            encrypted[i] = v;
 
             m ^= v;
             sum = sum.add(Long.fromNumber(v, true));
@@ -70,8 +69,7 @@ export default class ShortCrypt {
 
         const crc64 = new Crc64We();
 
-        crc64.digest([m]);
-        crc64.digest(sum.toBytesBE());
+        crc64.digest(new Uint8Array([m, ...sum.toBytesBE()]));
 
         const hashedVec = crc64.getByteArray();
 
@@ -97,11 +95,11 @@ export default class ShortCrypt {
         };
     }
 
-    decrypt(base: number, body: number[]): number[] | false;
+    decrypt(base: number, body: Uint8Array): Uint8Array | false;
 
-    decrypt(cipher: Cipher): number[] | false;
+    decrypt(cipher: Cipher): Uint8Array | false;
 
-    decrypt(baseOrCipher: number | Cipher, body?: number[]): number[] | false {
+    decrypt(baseOrCipher: number | Cipher, body?: Uint8Array): Uint8Array | false {
         let base: number;
 
         if (typeof baseOrCipher === "object") {
@@ -115,11 +113,11 @@ export default class ShortCrypt {
             return false;
         }
 
-        const decrypted: number[] = [];
-
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const data = body!;
         const len = data.length;
+
+        const decrypted = new Uint8Array(len);
 
         let m = base;
         let sum = Long.fromNumber(base, true);
@@ -131,8 +129,7 @@ export default class ShortCrypt {
 
         const crc = new Crc64We();
 
-        crc.digest([m]);
-        crc.digest(sum.toBytesBE());
+        crc.digest(new Uint8Array([m, ...sum.toBytesBE()]));
 
         const hashedVec = crc.getByteArray();
 
@@ -158,15 +155,15 @@ export default class ShortCrypt {
         data.forEach((d, i) => {
             const offset = this.hashedKey[i % 8] ^ base;
 
-            decrypted.push(d ^ offset);
+            decrypted[i] = d ^ offset;
         });
 
         return decrypted;
     }
 
-    encryptToURLComponent(data: number[] | string): string {
+    encryptToURLComponent(data: Uint8Array | string): string {
         if (typeof data === "string") {
-            data = stringToUtf8ByteArray(data);
+            data = new TextEncoder().encode(data);
         }
 
         const cipher = this.encrypt(data);
@@ -179,7 +176,7 @@ export default class ShortCrypt {
 
         const result = base64url.stringify(encrypted, { pad: false });
 
-        const resultArray = stringToUtf8ByteArray(result);
+        const resultArray = new TextEncoder().encode(result);
 
         const len = resultArray.length;
 
@@ -194,8 +191,8 @@ export default class ShortCrypt {
         return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
-    decryptURLComponent(urlComponent: string): number[] | false {
-        const bytes = stringToUtf8ByteArray(urlComponent);
+    decryptURLComponent(urlComponent: string): Uint8Array | false {
+        const bytes = new TextEncoder().encode(urlComponent);
 
         const len = bytes.length;
 
@@ -220,7 +217,7 @@ export default class ShortCrypt {
         const encryptedBase64Url = urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
 
         try {
-            const encrypted = base64url.parse(encryptedBase64Url, { out: Array, loose: true }) as unknown as number[];
+            const encrypted = base64url.parse(encryptedBase64Url, { out: Uint8Array, loose: true });
 
             return this.decrypt(base, encrypted);
         } catch {
@@ -228,16 +225,9 @@ export default class ShortCrypt {
         }
     }
 
-    /**
-     * @deprecated Should use `decryptURLComponent`.
-     */
-    descryptURLComponent(urlComponent: string): number[] | false {
-        return this.decryptURLComponent(urlComponent);
-    }
-
-    encryptToQRCodeAlphanumeric(data: number[] | string): string {
+    encryptToQRCodeAlphanumeric(data: Uint8Array | string): string {
         if (typeof data === "string") {
-            data = stringToUtf8ByteArray(data);
+            data = new TextEncoder().encode(data);
         }
 
         const cipher = this.encrypt(data);
@@ -250,7 +240,7 @@ export default class ShortCrypt {
 
         const result = base32.stringify(encrypted, { pad: false });
 
-        const resultArray = stringToUtf8ByteArray(result);
+        const resultArray = new TextEncoder().encode(result);
 
         const len = resultArray.length;
 
@@ -265,8 +255,8 @@ export default class ShortCrypt {
         return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
-    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): number[] | false {
-        const bytes = stringToUtf8ByteArray(qrCodeAlphanumeric);
+    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): Uint8Array | false {
+        const bytes = new TextEncoder().encode(qrCodeAlphanumeric);
 
         const len = bytes.length;
 
@@ -291,7 +281,7 @@ export default class ShortCrypt {
         const encryptedBase32 = qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
 
         try {
-            const encrypted = base32.parse(encryptedBase32, { out: Array, loose: true }) as unknown as number[];
+            const encrypted = base32.parse(encryptedBase32, { out: Uint8Array, loose: true });
 
             return this.decrypt(base, encrypted);
         } catch {

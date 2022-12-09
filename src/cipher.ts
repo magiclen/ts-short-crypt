@@ -1,6 +1,6 @@
 interface Cipher {
     base: number;
-    body: number[];
+    body: Uint8Array;
 }
 
 export default Cipher;
