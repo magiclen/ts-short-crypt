@@ -40,7 +40,7 @@ const result2 = sc.decryptQRCodeAlphanumeric(cipher2);
 ## Usage for Browsers
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/short-crypt/dist/short-crypt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/magiclen/ts-short-crypt/dist/short-crypt.min.js"></script>
 <script>
     const sc = new ShortCrypt(key);
     // ...
