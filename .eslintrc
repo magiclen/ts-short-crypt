@@ -4,6 +4,7 @@
     "@typescript-eslint"
   ],
   "env": {
+    "es2022": true,
     "browser": true,
     "node": true
   },

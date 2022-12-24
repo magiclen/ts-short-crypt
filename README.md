@@ -8,7 +8,7 @@ ShortCrypt is a very simple encryption library, which aims to encrypt any data i
 ## Usage
 
 ```typescript
-import ShortCrypt from "short-crypt";
+import { ShortCrypt } from "short-crypt";
 ```
 
 Then, create a `ShortCrypt` instance with a key (string).

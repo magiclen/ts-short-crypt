@@ -13,7 +13,7 @@ import {
     string32toU8,
 } from "./functions";
 
-export default class ShortCrypt {
+export class ShortCrypt {
     private hashedKey: number[];
 
     private keySumRev: Long;
@@ -289,5 +289,3 @@ export default class ShortCrypt {
         }
     }
 }
-
-module.exports = ShortCrypt;
