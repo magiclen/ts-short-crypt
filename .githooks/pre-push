@@ -1,6 +1,6 @@
 #!/bin/bash
 	 
 npm run build:webpack
-if ! git diff --exit-code lib; then
+if ! git diff --exit-code dist; then
     git add lib && git commit --no-verify -m "generate dist files"
 fi

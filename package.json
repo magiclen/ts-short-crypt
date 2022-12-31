@@ -1,6 +1,6 @@
 {
   "name": "short-crypt",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance.",
   "main": "lib/short_crypt.js",
   "types": "lib/short_crypt.d.ts",
