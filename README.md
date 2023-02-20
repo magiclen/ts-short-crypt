@@ -41,7 +41,7 @@ const result2 = sc.decryptQRCodeAlphanumeric(cipher2);
 
 [Source](demo.html)
 
-[Demo Page](https://htmlpreview.github.io/?https://github.com/magiclen/ts-short-crypt/blob/master/demo.html)
+[Demo Page](https://rawcdn.githack.com/magiclen/ts-short-crypt/master/demo.html)
 
 ## License
 
