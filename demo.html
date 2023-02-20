@@ -3,27 +3,138 @@
 
 <head>
     <meta charset=UTF-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <!-- <script src="https://cdn.jsdelivr.net/gh/magiclen/ts-short-crypt/dist/short-crypt.min.js"></script> -->
     <script src="./dist/short-crypt.min.js"></script>
     <title>ShortCrypt</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .form-control:read-only, .form-control:focus {
+            background-color: #EEE;
+        }
+    </style>
 </head>
 
-<body>
-    <p>Plain Text: hello</p>
-    <p>Key: magickey</p>
-    <p>Cipher(URL): <span id="url-component"></span></p>
-    <p>Cipher(QR Code): <span id="qr-code-alphanumeric"></span></p>
+<body class="p-3 p-lg-5">
+    <div id="demo-short-crypt" class="container">
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="form-floating mb-3">
+                    <input type="text" id="key" class="form-control" placeholder="key" value="magickey">
+                    <label for="key">key</label>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        Encryption
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" id="plaintext" class="form-control" placeholder="plaintext" value="hello">
+                                    <label for="plaintext">plaintext</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" id="resultURLComponent" class="form-control" placeholder="resultURLComponent" readonly>
+                                    <label for="resultURLComponent">resultURLComponent</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" id="resultQRCodeAlphanumeric" class="form-control" placeholder="resultQRCodeAlphanumeric" readonly>
+                                    <label for="resultQRCodeAlphanumeric">resultQRCodeAlphanumeric</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        Decryption
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" id="cipher" class="form-control" placeholder="cipher" value="T_LVjlIC">
+                                    <label for="cipher">cipher (URLComponent or QRCodeAlphanumeric)</label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="form-floating mb-3">
+                                    <input type="text" id="resultPlainText" class="form-control" placeholder="resultPlainText" readonly>
+                                    <label for="resultPlainText">resultPlainText</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
-        var plainText = 'hello';
-        var key = 'magickey';
+        const intputKey = document.getElementById('key');
 
-        var sc = new ShortCrypt(key);
+        const intputPlaintext = document.getElementById('plaintext');
+        const intputResultURLComponent = document.getElementById('resultURLComponent');
+        const intputResultQRCodeAlphanumeric = document.getElementById('resultQRCodeAlphanumeric');
 
-        var cipher1 = sc.encryptToURLComponent(plainText);
-        var cipher2 = sc.encryptToQRCodeAlphanumeric(plainText);
+        const intputCipher = document.getElementById('cipher');
+        const intputResultPlainText = document.getElementById('resultPlainText');
 
-        document.getElementById('url-component').innerHTML = cipher1;
-        document.getElementById('qr-code-alphanumeric').innerHTML = cipher2;
+        const encrypt = () => {
+            const key = intputKey.value;
+
+            const sc = new ShortCrypt(key);
+
+            const plaintext = intputPlaintext.value;
+
+            intputResultURLComponent.value = sc.encryptToURLComponent(plaintext);
+            intputResultQRCodeAlphanumeric.value = sc.encryptToQRCodeAlphanumeric(plaintext);
+        };
+
+        const decrypt = () => {
+            const key = intputKey.value;
+
+            const sc = new ShortCrypt(key);
+
+            const cipher = intputCipher.value;
+
+            const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
+
+            try {
+                intputResultPlainText.value = utf8Decoder.decode(sc.decryptURLComponent(cipher), {});
+            } catch {
+                try {
+                    intputResultPlainText.value = utf8Decoder.decode(sc.decryptQRCodeAlphanumeric(cipher));
+                } catch {
+                    intputResultPlainText.classList.add('is-invalid');
+                    return;
+                }
+            }
+
+            intputResultPlainText.classList.remove('is-invalid');
+        };
+
+        intputKey.addEventListener('input', () => {
+            encrypt();
+            decrypt();
+        });
+
+        intputPlaintext.addEventListener('input', encrypt);
+        intputCipher.addEventListener('input', decrypt);
+
+        encrypt();
+        decrypt();
     </script>
 </body>
 

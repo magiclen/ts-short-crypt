@@ -39,13 +39,9 @@ const result2 = sc.decryptQRCodeAlphanumeric(cipher2);
 
 ## Usage for Browsers
 
-```html
-<script src="https://cdn.jsdelivr.net/gh/magiclen/ts-short-crypt/dist/short-crypt.min.js"></script>
-<script>
-    const sc = new ShortCrypt(key);
-    // ...
-</script>
-```
+[Source](demo.html)
+
+[Demo Page](https://htmlpreview.github.io/?https://github.com/magiclen/ts-short-crypt/blob/master/demo.html)
 
 ## License
 
