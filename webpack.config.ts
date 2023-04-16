@@ -3,7 +3,7 @@ import { Configuration } from "webpack";
 import TerserPlugin from "terser-webpack-plugin";
 
 const config: Configuration = {
-    entry: "./src/short_crypt.ts",
+    entry: "./src/lib.ts",
     output: {
         clean: true,
         filename: "short-crypt.min.js",

@@ -39,7 +39,7 @@
   },
   "homepage": "https://magiclen.org/short-crypt/",
   "dependencies": {
-    "long": "^5.2.2",
+    "long": "=5.2.1",
     "rfc4648": "^1.5.2"
   },
   "devDependencies": {
