@@ -1,4 +1,4 @@
-import { ShortCrypt } from "../src/lib";
+import { ShortCrypt } from "../src/lib.js";
 
 describe("Encryption", function () {
     it("should use `magickey` to encrypt `articles`", () => {

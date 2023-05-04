@@ -32,7 +32,7 @@ const config: Configuration = {
             },
         ],
     },
-    resolve: { extensions: [".ts", ".js"] },
+    resolve: { extensionAlias: { ".js": [".ts", ".js"] } },
     optimization: {
         minimizer: [
             new TerserPlugin({
