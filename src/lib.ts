@@ -1,16 +1,16 @@
 import Long from "long";
 import { base32, base64url } from "rfc4648";
 
+import Cipher from "./cipher.js";
 import Crc64We from "./crc64_we.js";
 import Crc8Cdma from "./crc8_cdma.js";
-import Cipher from "./cipher.js";
 
 import {
     reverseU64,
-    string64toU8,
-    u8toString64,
-    u8toString32,
     string32toU8,
+    string64toU8,
+    u8toString32,
+    u8toString64,
 } from "./functions.js";
 
 export class ShortCrypt {
