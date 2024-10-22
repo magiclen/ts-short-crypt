@@ -327,5 +327,5 @@ export default tseslint.config(
             }],
         }
     },
-    { ignores: ["eslint.config.mjs", "dist/*"], },
+    { ignores: ["eslint.config.mjs", "dist/*", "lib/*"], },
 );

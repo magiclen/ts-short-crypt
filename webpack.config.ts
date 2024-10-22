@@ -1,6 +1,6 @@
-import { Configuration } from "webpack";
-
 import TerserPlugin from "terser-webpack-plugin";
+import type { Configuration } from "webpack";
+
 
 const config: Configuration = {
     entry: "./src/lib.ts",
@@ -13,7 +13,7 @@ const config: Configuration = {
     module: {
         rules: [
             {
-                test: /\.ts$/i,
+                test: /\.ts$/iu,
                 use: [
                     {
                         loader: "babel-loader",
@@ -22,7 +22,7 @@ const config: Configuration = {
                 ],
             },
             {
-                test: /\.js$/i,
+                test: /\.js$/iu,
                 use: [
                     {
                         loader: "babel-loader",
