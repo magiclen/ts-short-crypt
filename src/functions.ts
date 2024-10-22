@@ -45,11 +45,21 @@ export const string32toU8 = (c: number): number => {
 };
 
 export const reverseU64 = (v: Long): Long => {
-    v = v.shiftRight(1).and(new Long(0x55555555, 0x55555555)).or(v.and(new Long(0x55555555, 0x55555555)).shiftLeft(1));
-    v = v.shiftRight(2).and(new Long(0x33333333, 0x33333333)).or(v.and(new Long(0x33333333, 0x33333333)).shiftLeft(2));
-    v = v.shiftRight(4).and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).or(v.and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).shiftLeft(4));
-    v = v.shiftRight(8).and(new Long(0x00FF00FF, 0x00FF00FF)).or(v.and(new Long(0x00FF00FF, 0x00FF00FF)).shiftLeft(8));
-    v = v.shiftRight(16).and(new Long(0x0000FFFF, 0x0000FFFF)).or(v.and(new Long(0x0000FFFF, 0x0000FFFF)).shiftLeft(16));
+    v = v.shiftRight(1).and(new Long(0x55555555, 0x55555555)).or(
+        v.and(new Long(0x55555555, 0x55555555)).shiftLeft(1),
+    );
+    v = v.shiftRight(2).and(new Long(0x33333333, 0x33333333)).or(
+        v.and(new Long(0x33333333, 0x33333333)).shiftLeft(2),
+    );
+    v = v.shiftRight(4).and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).or(
+        v.and(new Long(0x0F0F0F0F, 0x0F0F0F0F)).shiftLeft(4),
+    );
+    v = v.shiftRight(8).and(new Long(0x00FF00FF, 0x00FF00FF)).or(
+        v.and(new Long(0x00FF00FF, 0x00FF00FF)).shiftLeft(8),
+    );
+    v = v.shiftRight(16).and(new Long(0x0000FFFF, 0x0000FFFF)).or(
+        v.and(new Long(0x0000FFFF, 0x0000FFFF)).shiftLeft(16),
+    );
     v = v.shiftRight(32).or(v.shiftLeft(32));
 
     return v;
