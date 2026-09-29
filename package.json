@@ -1,9 +1,13 @@
 {
     "name": "short-crypt",
-    "version": "4.0.0",
-    "description": "ShortCrypt is a very simple encryption library, which aims to encrypt any data into something random at first glance.",
+    "version": "5.0.0",
+    "description": "ShortCrypt is a very simple deterministic encryption library, which aims to encrypt any data into something random at first glance.",
     "keywords": [
-        "short-crypt"
+        "crypto",
+        "decrypt",
+        "encrypt",
+        "qrcode",
+        "url"
     ],
     "homepage": "https://magiclen.org/short-crypt/",
     "bugs": {
