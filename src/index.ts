@@ -1,298 +1,330 @@
-import Long from "long";
-import { base32, base64url } from "rfc4648";
+import { crc64We, crc8Cdma2000 } from "./crc.ts";
+import { decodeBase32, decodeBase64Url, encodeBase32, encodeBase64Url } from "./encoding.ts";
 
-import type Cipher from "./cipher.ts";
-import Crc8Cdma from "./crc8_cdma.ts";
-import Crc64We from "./crc64_we.ts";
-import { reverseU64, string32toU8, string64toU8, u8toString32, u8toString64 } from "./functions.ts";
+/**
+ * A cipher made of a 5-bit **base** and a **body** whose length equals the plaintext length. You
+ * can combine them with your own algorithm, or use `encryptToURLComponent` or
+ * `encryptToQRCodeAlphanumeric` to produce a random-like string.
+ */
+export interface Cipher {
+    /** An integer from 0 to 31. */
+    base: number;
 
+    /** The encrypted data. */
+    body: Uint8Array;
+}
+
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder("utf-8", { fatal: true });
+
+const toBytes = (data: Uint8Array | string): Uint8Array =>
+    typeof data === "string" ? textEncoder.encode(data) : data;
+
+const decodeUtf8 = (data: Uint8Array | undefined): string | undefined => {
+    if (data === undefined) {
+        return undefined;
+    }
+
+    try {
+        return textDecoder.decode(data);
+    } catch {
+        return undefined;
+    }
+};
+
+const toBigEndianBytes = (value: bigint): Uint8Array => {
+    const bytes = new Uint8Array(8);
+
+    new DataView(bytes.buffer).setBigUint64(0, value);
+
+    return bytes;
+};
+
+const reverseBits = (value: bigint): bigint => {
+    let result = 0n;
+
+    for (let i = 0; i < 64; i++) {
+        result = (result << 1n) | (value & 1n);
+        value >>= 1n;
+    }
+
+    return result;
+};
+
+// The base is from 0 to 31, so it is written as one of `0-9` and `A-V`.
+const encodeBase = (base: number): number => (base < 10 ? base + 0x30 : base - 10 + 0x41);
+
+const decodeBase = (code: number): number | undefined => {
+    if (code >= 0x30 && code <= 0x39) {
+        return code - 0x30;
+    }
+
+    if (code >= 0x41 && code <= 0x56) {
+        return code - 0x41 + 10;
+    }
+
+    return undefined;
+};
+
+const checksumBase = (data: Uint8Array): number => crc8Cdma2000(data) % 32;
+
+// The sum never exceeds `Number.MAX_SAFE_INTEGER` for any possible data length, so it equals the wrapping `u64` sum in Rust.
+const sumBytes = (bytes: Uint8Array): number => {
+    let sum = 0;
+
+    for (const n of bytes) {
+        sum += n;
+    }
+
+    return sum;
+};
+
+const permutationSeed = (m: number, sum: number): Uint8Array => {
+    const bytes = new Uint8Array(9);
+
+    bytes[0] = m;
+    new DataView(bytes.buffer).setBigUint64(1, BigInt(sum));
+
+    return toBigEndianBytes(crc64We(bytes));
+};
+
+/** A deterministic encryption context derived from a string key. */
 export class ShortCrypt {
-    private hashedKey: number[];
+    readonly #hashedKey: Uint8Array;
 
-    private keySumRev: Long;
+    readonly #keySumRev: bigint;
 
+    /** Creates a new `ShortCrypt` instance from a string key. */
     constructor(key: string) {
-        const data = new TextEncoder().encode(key);
+        const keyBytes = textEncoder.encode(key);
 
-        const crc = new Crc64We();
-
-        crc.digest(data);
-
-        this.hashedKey = crc.getByteArray();
-
-        let keySum = Long.UZERO;
-
-        data.forEach((n) => {
-            keySum = keySum.add(n);
-        });
-
-        this.keySumRev = reverseU64(keySum);
+        this.#hashedKey = toBigEndianBytes(crc64We(keyBytes));
+        this.#keySumRev = reverseBits(BigInt(sumBytes(keyBytes)));
     }
 
-    encrypt(data: Uint8Array | string): Cipher {
-        if (typeof data === "string") {
-            data = new TextEncoder().encode(data);
-        }
-
+    /** Encrypts a string (as UTF-8) or bytes into a `Cipher`. */
+    encrypt(plaintext: Uint8Array | string): Cipher {
+        const data = toBytes(plaintext);
         const len = data.length;
 
-        const crc8 = new Crc8Cdma();
+        const base = checksumBase(data);
 
-        crc8.digest(data);
-
-        const hashedValue = crc8.getNumber();
-
-        const base = hashedValue % 32;
-
-        const encrypted = new Uint8Array(len);
+        const body = new Uint8Array(len);
 
         let m = base;
-        let sum = Long.fromNumber(base, true);
+        let sum = base;
 
-        data.forEach((d, i) => {
-            const offset = this.hashedKey[i % 8] ^ base;
+        for (let i = 0; i < len; i++) {
+            const v = data[i] ^ this.#hashedKey[i % 8] ^ base;
 
-            const v = d ^ offset;
-
-            encrypted[i] = v;
+            body[i] = v;
 
             m ^= v;
-            sum = sum.add(Long.fromNumber(v, true));
-        });
-
-        const crc64 = new Crc64We();
-
-        crc64.digest(new Uint8Array([m, ...sum.toBytesBE()]));
-
-        const hashedVec = crc64.getByteArray();
-
-        const path = [];
-
-        for (let i = 0; i < len; ++i) {
-            const index = i % 8;
-            path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
+            sum += v;
         }
 
-        path.forEach((p, i) => {
-            if (p === i) {
-                return;
-            }
-            const t = encrypted[i];
-            encrypted[i] = encrypted[p];
-            encrypted[p] = t;
-        });
+        const seed = permutationSeed(m, sum);
 
-        return {
-            base: base,
-            body: encrypted,
-        };
+        for (let i = 0; i < len; i++) {
+            this.#swap(body, seed, i);
+        }
+
+        return { base, body };
     }
 
-    decrypt(base: number, body: Uint8Array): Uint8Array | false;
+    /**
+     * Decrypts a `Cipher`.
+     *
+     * @returns The plaintext bytes, or `undefined` if the cipher is incorrect.
+     */
+    decrypt(cipher: Cipher): Uint8Array | undefined {
+        const { base, body } = cipher;
 
-    decrypt(cipher: Cipher): Uint8Array | false;
-
-    decrypt(baseOrCipher: number | Cipher, body?: Uint8Array): Uint8Array | false {
-        let base: number;
-
-        if (typeof baseOrCipher === "object") {
-            body = baseOrCipher.body;
-            base = baseOrCipher.base;
-        } else {
-            base = baseOrCipher;
+        if (!Number.isInteger(base) || base < 0 || base > 31) {
+            return undefined;
         }
 
-        if (base < 0 || base > 31) {
-            return false;
+        // Copy the body so that the data of the caller is not changed (`slice` does not copy a `Buffer`).
+        return this.#decryptInPlace(base, new Uint8Array(body));
+    }
+
+    /**
+     * Decrypts a `Cipher` into a UTF-8 string.
+     *
+     * @returns The plaintext string, or `undefined` if the cipher is incorrect or the plaintext is
+     *   not valid UTF-8.
+     */
+    decryptToString(cipher: Cipher): string | undefined {
+        return decodeUtf8(this.decrypt(cipher));
+    }
+
+    /**
+     * Encrypts a string (as UTF-8) or bytes into a random-like string based on Base64-URL. The
+     * result can be concatenated with URLs.
+     */
+    encryptToURLComponent(plaintext: Uint8Array | string): string {
+        const { base, body } = this.encrypt(plaintext);
+
+        return this.#insertBase(base, encodeBase64Url(body));
+    }
+
+    /**
+     * Decrypts a string created by `encryptToURLComponent`.
+     *
+     * @returns The plaintext bytes, or `undefined` if the string is incorrect.
+     */
+    decryptURLComponent(urlComponent: string): Uint8Array | undefined {
+        const extracted = this.#extractBase(urlComponent);
+
+        if (extracted === undefined) {
+            return undefined;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const data = body!;
-        const len = data.length;
+        const body = decodeBase64Url(extracted.rest);
 
-        const decrypted = new Uint8Array(len);
-
-        let m = base;
-        let sum = Long.fromNumber(base, true);
-
-        data.forEach((v) => {
-            m ^= v;
-            sum = sum.add(Long.fromNumber(v, true));
-        });
-
-        const crc = new Crc64We();
-
-        crc.digest(new Uint8Array([m, ...sum.toBytesBE()]));
-
-        const hashedVec = crc.getByteArray();
-
-        const path = [];
-
-        for (let i = 0; i < len; ++i) {
-            const index = i % 8;
-            path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
+        if (body === undefined) {
+            return undefined;
         }
 
-        const pathLenDec = path.length - 1;
+        return this.#decryptInPlace(extracted.base, body);
+    }
 
-        path.toReversed().forEach((p, i) => {
-            i = pathLenDec - i;
-            if (p === i) {
-                return;
-            }
+    /**
+     * Decrypts a string created by `encryptToURLComponent` into a UTF-8 string.
+     *
+     * @returns The plaintext string, or `undefined` if the string is incorrect or the plaintext is
+     *   not valid UTF-8.
+     */
+    decryptURLComponentToString(urlComponent: string): string | undefined {
+        return decodeUtf8(this.decryptURLComponent(urlComponent));
+    }
+
+    /**
+     * Encrypts a string (as UTF-8) or bytes into a random-like string based on Base32. The result
+     * is compatible with the alphanumeric mode of QR codes.
+     */
+    encryptToQRCodeAlphanumeric(plaintext: Uint8Array | string): string {
+        const { base, body } = this.encrypt(plaintext);
+
+        return this.#insertBase(base, encodeBase32(body));
+    }
+
+    /**
+     * Decrypts a string created by `encryptToQRCodeAlphanumeric`.
+     *
+     * @returns The plaintext bytes, or `undefined` if the string is incorrect.
+     */
+    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): Uint8Array | undefined {
+        const extracted = this.#extractBase(qrCodeAlphanumeric);
+
+        if (extracted === undefined) {
+            return undefined;
+        }
+
+        const body = decodeBase32(extracted.rest);
+
+        if (body === undefined) {
+            return undefined;
+        }
+
+        return this.#decryptInPlace(extracted.base, body);
+    }
+
+    /**
+     * Decrypts a string created by `encryptToQRCodeAlphanumeric` into a UTF-8 string.
+     *
+     * @returns The plaintext string, or `undefined` if the string is incorrect or the plaintext is
+     *   not valid UTF-8.
+     */
+    decryptQRCodeAlphanumericToString(qrCodeAlphanumeric: string): string | undefined {
+        return decodeUtf8(this.decryptQRCodeAlphanumeric(qrCodeAlphanumeric));
+    }
+
+    #swap(data: Uint8Array, seed: Uint8Array, i: number): void {
+        const index = i % 8;
+        const p = (seed[index] ^ this.#hashedKey[index]) % data.length;
+
+        if (p !== i) {
             const t = data[i];
+
             data[i] = data[p];
             data[p] = t;
-        });
-
-        data.forEach((d, i) => {
-            const offset = this.hashedKey[i % 8] ^ base;
-
-            decrypted[i] = d ^ offset;
-        });
-
-        return decrypted;
-    }
-
-    encryptToURLComponent(data: Uint8Array | string): string {
-        if (typeof data === "string") {
-            data = new TextEncoder().encode(data);
-        }
-
-        const cipher = this.encrypt(data);
-
-        const base = u8toString64(cipher.base);
-
-        const encrypted = cipher.body;
-
-        const baseChar = String.fromCharCode(base);
-
-        const result = base64url.stringify(encrypted, { pad: false });
-
-        const resultArray = new TextEncoder().encode(result);
-
-        const len = resultArray.length;
-
-        let sum = Long.fromNumber(base);
-
-        resultArray.forEach((n) => {
-            sum = sum.add(Long.fromNumber(n, true));
-        });
-
-        const baseIndex = this.keySumRev
-            .xor(sum)
-            .mod(len + 1)
-            .toNumber();
-
-        return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
-    }
-
-    decryptURLComponent(urlComponent: string): Uint8Array | false {
-        const bytes = new TextEncoder().encode(urlComponent);
-
-        const len = bytes.length;
-
-        if (len < 1) {
-            return false;
-        }
-
-        let sum = Long.UZERO;
-
-        bytes.forEach((n) => {
-            sum = sum.add(Long.fromNumber(n, true));
-        });
-
-        const baseIndex = this.keySumRev.xor(sum).mod(len).toNumber();
-
-        const base = string64toU8(bytes[baseIndex]);
-
-        if (base < 0 || base > 31) {
-            return false;
-        }
-
-        const encryptedBase64Url =
-            urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
-
-        try {
-            const encrypted = base64url.parse(encryptedBase64Url, {
-                out: Uint8Array,
-                loose: true,
-            });
-
-            return this.decrypt(base, encrypted);
-        } catch {
-            return false;
         }
     }
 
-    encryptToQRCodeAlphanumeric(data: Uint8Array | string): string {
-        if (typeof data === "string") {
-            data = new TextEncoder().encode(data);
+    #decryptInPlace(base: number, data: Uint8Array): Uint8Array | undefined {
+        const len = data.length;
+
+        let m = base;
+        let sum = base;
+
+        for (const v of data) {
+            m ^= v;
+            sum += v;
         }
 
-        const cipher = this.encrypt(data);
+        const seed = permutationSeed(m, sum);
 
-        const base = u8toString32(cipher.base);
+        for (let i = len - 1; i >= 0; i--) {
+            this.#swap(data, seed, i);
+        }
 
-        const encrypted = cipher.body;
+        for (let i = 0; i < len; i++) {
+            data[i] ^= this.#hashedKey[i % 8] ^ base;
+        }
 
-        const baseChar = String.fromCharCode(base);
+        if (checksumBase(data) !== base) {
+            return undefined;
+        }
 
-        const result = base32.stringify(encrypted, { pad: false });
-
-        const resultArray = new TextEncoder().encode(result);
-
-        const len = resultArray.length;
-
-        let sum = Long.fromNumber(base, true);
-
-        resultArray.forEach((n) => {
-            sum = sum.add(Long.fromNumber(n, true));
-        });
-
-        const baseIndex = this.keySumRev
-            .xor(sum)
-            .mod(len + 1)
-            .toNumber();
-
-        return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
+        return data;
     }
 
-    decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): Uint8Array | false {
-        const bytes = new TextEncoder().encode(qrCodeAlphanumeric);
+    #baseIndex(sum: number, length: number): number {
+        return Number((this.#keySumRev ^ BigInt(sum)) % BigInt(length));
+    }
 
-        const len = bytes.length;
+    #insertBase(base: number, encoded: string): string {
+        const baseCode = encodeBase(base);
 
-        if (len < 1) {
-            return false;
+        let sum = baseCode;
+
+        for (let i = 0; i < encoded.length; i++) {
+            sum += encoded.charCodeAt(i);
         }
 
-        let sum = Long.UZERO;
+        const index = this.#baseIndex(sum, encoded.length + 1);
 
-        bytes.forEach((n) => {
-            sum = sum.add(Long.fromNumber(n, true));
-        });
+        return encoded.slice(0, index) + String.fromCharCode(baseCode) + encoded.slice(index);
+    }
 
-        const baseIndex = this.keySumRev.xor(sum).mod(len).toNumber();
+    #extractBase(text: string): { base: number; rest: string } | undefined {
+        const len = text.length;
 
-        const base = string32toU8(bytes[baseIndex]);
-
-        if (base < 0 || base > 31) {
-            return false;
+        if (len === 0) {
+            return undefined;
         }
 
-        const encryptedBase32 =
-            qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
+        let sum = 0;
 
-        try {
-            const encrypted = base32.parse(encryptedBase32, {
-                out: Uint8Array,
-                loose: true,
-            });
+        for (let i = 0; i < len; i++) {
+            const code = text.charCodeAt(i);
 
-            return this.decrypt(base, encrypted);
-        } catch {
-            return false;
+            // Rust always rejects non-ASCII text, and only for ASCII text are UTF-16 indexes equal to UTF-8 byte indexes.
+            if (code > 0x7f) {
+                return undefined;
+            }
+
+            sum += code;
         }
+
+        const index = this.#baseIndex(sum, len);
+        const base = decodeBase(text.charCodeAt(index));
+
+        if (base === undefined) {
+            return undefined;
+        }
+
+        return { base, rest: text.slice(0, index) + text.slice(index + 1) };
     }
 }
