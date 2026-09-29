@@ -120,64 +120,56 @@
             </div>
         </div>
         <script>
-            const intputKey = document.getElementById("key");
+            const inputKey = document.getElementById("key");
 
-            const intputPlaintext = document.getElementById("plaintext");
-            const intputResultURLComponent = document.getElementById("resultURLComponent");
-            const intputResultQRCodeAlphanumeric = document.getElementById(
+            const inputPlaintext = document.getElementById("plaintext");
+            const inputResultURLComponent = document.getElementById("resultURLComponent");
+            const inputResultQRCodeAlphanumeric = document.getElementById(
                 "resultQRCodeAlphanumeric",
             );
 
-            const intputCipher = document.getElementById("cipher");
-            const intputResultPlainText = document.getElementById("resultPlainText");
+            const inputCipher = document.getElementById("cipher");
+            const inputResultPlainText = document.getElementById("resultPlainText");
 
             const encrypt = () => {
-                const key = intputKey.value;
+                const key = inputKey.value;
 
-                const sc = new ShortCrypt(key);
+                const sc = new ShortCrypt.ShortCrypt(key);
 
-                const plaintext = intputPlaintext.value;
+                const plaintext = inputPlaintext.value;
 
-                intputResultURLComponent.value = sc.encryptToURLComponent(plaintext);
-                intputResultQRCodeAlphanumeric.value = sc.encryptToQRCodeAlphanumeric(plaintext);
+                inputResultURLComponent.value = sc.encryptToURLComponent(plaintext);
+                inputResultQRCodeAlphanumeric.value = sc.encryptToQRCodeAlphanumeric(plaintext);
             };
 
             const decrypt = () => {
-                const key = intputKey.value;
+                const key = inputKey.value;
 
-                const sc = new ShortCrypt(key);
+                const sc = new ShortCrypt.ShortCrypt(key);
 
-                const cipher = intputCipher.value;
+                const cipher = inputCipher.value;
 
-                const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
+                const plaintext =
+                    sc.decryptURLComponentToString(cipher) ??
+                    sc.decryptQRCodeAlphanumericToString(cipher);
 
-                try {
-                    intputResultPlainText.value = utf8Decoder.decode(
-                        sc.decryptURLComponent(cipher),
-                        {},
-                    );
-                } catch {
-                    try {
-                        intputResultPlainText.value = utf8Decoder.decode(
-                            sc.decryptQRCodeAlphanumeric(cipher),
-                        );
-                    } catch {
-                        intputResultPlainText.value = "";
-                        intputResultPlainText.classList.add("is-invalid");
-                        return;
-                    }
+                if (plaintext === undefined) {
+                    inputResultPlainText.value = "";
+                    inputResultPlainText.classList.add("is-invalid");
+                    return;
                 }
 
-                intputResultPlainText.classList.remove("is-invalid");
+                inputResultPlainText.value = plaintext;
+                inputResultPlainText.classList.remove("is-invalid");
             };
 
-            intputKey.addEventListener("input", () => {
+            inputKey.addEventListener("input", () => {
                 encrypt();
                 decrypt();
             });
 
-            intputPlaintext.addEventListener("input", encrypt);
-            intputCipher.addEventListener("input", decrypt);
+            inputPlaintext.addEventListener("input", encrypt);
+            inputCipher.addEventListener("input", decrypt);
 
             encrypt();
             decrypt();
