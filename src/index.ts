@@ -1,19 +1,10 @@
-/* eslint-disable no-bitwise */
-
 import Long from "long";
 import { base32, base64url } from "rfc4648";
 
-import type Cipher from "./cipher.js";
-import Crc64We from "./crc64_we.js";
-import Crc8Cdma from "./crc8_cdma.js";
-
-import {
-    reverseU64,
-    string32toU8,
-    string64toU8,
-    u8toString32,
-    u8toString64,
-} from "./functions.js";
+import type Cipher from "./cipher.ts";
+import Crc8Cdma from "./crc8_cdma.ts";
+import Crc64We from "./crc64_we.ts";
+import { reverseU64, string32toU8, string64toU8, u8toString32, u8toString64 } from "./functions.ts";
 
 export class ShortCrypt {
     private hashedKey: number[];
@@ -77,7 +68,7 @@ export class ShortCrypt {
 
         const path = [];
 
-        for (let i = 0;i < len;++i) {
+        for (let i = 0; i < len; ++i) {
             const index = i % 8;
             path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
         }
@@ -101,10 +92,7 @@ export class ShortCrypt {
 
     decrypt(cipher: Cipher): Uint8Array | false;
 
-    decrypt(
-        baseOrCipher: number | Cipher,
-        body?: Uint8Array,
-    ): Uint8Array | false {
+    decrypt(baseOrCipher: number | Cipher, body?: Uint8Array): Uint8Array | false {
         let base: number;
 
         if (typeof baseOrCipher === "object") {
@@ -140,14 +128,14 @@ export class ShortCrypt {
 
         const path = [];
 
-        for (let i = 0;i < len;++i) {
+        for (let i = 0; i < len; ++i) {
             const index = i % 8;
             path.push((hashedVec[index] ^ this.hashedKey[index]) % len);
         }
 
         const pathLenDec = path.length - 1;
 
-        path.reverse().forEach((p, i) => {
+        path.toReversed().forEach((p, i) => {
             i = pathLenDec - i;
             if (p === i) {
                 return;
@@ -191,10 +179,12 @@ export class ShortCrypt {
             sum = sum.add(Long.fromNumber(n, true));
         });
 
-        const baseIndex = this.keySumRev.xor(sum).mod(len + 1).toNumber();
+        const baseIndex = this.keySumRev
+            .xor(sum)
+            .mod(len + 1)
+            .toNumber();
 
-        return result.substring(0, baseIndex) + baseChar
-            + result.substring(baseIndex, len);
+        return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
     decryptURLComponent(urlComponent: string): Uint8Array | false {
@@ -220,8 +210,8 @@ export class ShortCrypt {
             return false;
         }
 
-        const encryptedBase64Url = urlComponent.slice(0, baseIndex)
-            + urlComponent.slice(baseIndex + 1, len);
+        const encryptedBase64Url =
+            urlComponent.slice(0, baseIndex) + urlComponent.slice(baseIndex + 1, len);
 
         try {
             const encrypted = base64url.parse(encryptedBase64Url, {
@@ -260,10 +250,12 @@ export class ShortCrypt {
             sum = sum.add(Long.fromNumber(n, true));
         });
 
-        const baseIndex = this.keySumRev.xor(sum).mod(len + 1).toNumber();
+        const baseIndex = this.keySumRev
+            .xor(sum)
+            .mod(len + 1)
+            .toNumber();
 
-        return result.substring(0, baseIndex) + baseChar
-            + result.substring(baseIndex, len);
+        return result.substring(0, baseIndex) + baseChar + result.substring(baseIndex, len);
     }
 
     decryptQRCodeAlphanumeric(qrCodeAlphanumeric: string): Uint8Array | false {
@@ -289,8 +281,8 @@ export class ShortCrypt {
             return false;
         }
 
-        const encryptedBase32 = qrCodeAlphanumeric.slice(0, baseIndex)
-            + qrCodeAlphanumeric.slice(baseIndex + 1, len);
+        const encryptedBase32 =
+            qrCodeAlphanumeric.slice(0, baseIndex) + qrCodeAlphanumeric.slice(baseIndex + 1, len);
 
         try {
             const encrypted = base32.parse(encryptedBase32, {

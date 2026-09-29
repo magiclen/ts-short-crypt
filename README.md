@@ -19,9 +19,9 @@ const sc = new ShortCrypt(key);
 
 For encryption, you can choose to use one of these following methods:
 
-* `encrypt`: encrypts data to an object, a cipher separated into **base** and **body**
-* `encryptToURLComponent`: encrypts data to a string suitably concatenated with URLs
-* `encryptToQRCodeAlphanumeric`: encrypts data to a string with the compatibility with QR code alphanumeric mode
+- `encrypt`: encrypts data to an object, a cipher separated into **base** and **body**
+- `encryptToURLComponent`: encrypts data to a string suitably concatenated with URLs
+- `encryptToQRCodeAlphanumeric`: encrypts data to a string with the compatibility with QR code alphanumeric mode
 
 Only a string or a byte array can be encrypted.
 

@@ -1,6 +1,13 @@
-#!/bin/bash
-	 
-npm run build:webpack
-if ! git diff --exit-code dist; then
-    git add dist && git commit --no-verify -m "generate dist files"
+#!/bin/sh
+
+set -eu
+
+npm run build
+
+if [ -n "$(git status --porcelain dist)" ]; then
+    git add -- dist
+    git commit --only --no-verify -m "generate dist files" -- dist
+
+    echo "Generated and committed dist files. Run git push again to push the new commit."
+    exit 1
 fi

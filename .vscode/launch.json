@@ -1,7 +1,4 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
@@ -9,12 +6,6 @@
             "name": "test",
             "request": "launch",
             "command": "npm test"
-        },
-        {
-            "type": "node",
-            "name": "test:inspect-brk",
-            "request": "attach",
-            "port": 9230
         }
     ]
 }
